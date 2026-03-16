@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: oauth2 security principle
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER}
+
+  security:
+    oauth2:
+      authorizationserver:
+        issuer: http://localhost:9000
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+
+    flyway:
+      enabled: true
+      baseline-on-migration: true
+      locations: classpath:db/migration
+
+server:
+  port: 9000

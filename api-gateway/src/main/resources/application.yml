@@ -1,0 +1,9 @@
+spring:
+
+server:
+  port: 9090
+
+app:
+  services:
+    auth-server: http://auth-app:9000
+    api-server: http://api-app:8080

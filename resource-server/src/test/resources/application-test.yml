@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: api-test
+
+  jpa:
+    hibernate:
+      ddl-auto: none

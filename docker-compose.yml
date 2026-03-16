@@ -1,0 +1,101 @@
+services:
+
+  rabbit_mq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672-5672"
+      - "15672-15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  api_db:
+    image: mysql:8.4.0
+    environment:
+      MYSQL_DATABASE: ${API_DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${API_DB_PASSWORD}
+    volumes:
+      - api_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    container_name: api-db
+    ports:
+      - "${API_DB_PORT}:3306"
+
+  auth_db:
+    image: mysql:8.4.0
+    environment:
+      MYSQL_DATABASE: ${AUTH_DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${AUTH_DB_PASSWORD}
+    volumes:
+      - auth_db_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
+    container_name: auth-db
+    ports:
+      - "${AUTH_DB_PORT}:3306"
+
+  api_app:
+    build:
+      context: ./resource-server
+      dockerfile: Dockerfile
+    container_name: api-app
+    depends_on:
+      api_db:
+        condition: service_healthy
+      rabbit_mq:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://api-db/${API_DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${API_DB_PASSWORD}
+      - SPRING_DATASOURCE_DRIVER=${DB_DRIVER}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=${SECURITY_JWK_ISS}
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+    ports:
+      - "8080:8080"
+
+  auth_app:
+    build:
+      context: ./auth-server
+      dockerfile: Dockerfile
+    container_name: auth-app
+    depends_on:
+      auth_db:
+        condition: service_healthy
+      rabbit_mq:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://auth-db/${AUTH_DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${AUTH_DB_PASSWORD}
+      - SPRING_DATASOURCE_DRIVER=${DB_DRIVER}
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+    ports:
+      - "9000:9000"
+
+volumes:
+  api_db_data:
+  auth_db_data:
+  rabbitmq:
+
+
+

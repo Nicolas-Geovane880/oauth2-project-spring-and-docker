@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: auth-test
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+
+    hibernate:
+      ddl-auto: none
+
+  datasource:
+    hikari:
+      maximum-pool-size: 3
