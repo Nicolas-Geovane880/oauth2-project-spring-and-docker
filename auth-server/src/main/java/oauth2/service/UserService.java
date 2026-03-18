@@ -1,6 +1,8 @@
 package oauth2.service;
 
 import lombok.RequiredArgsConstructor;
+import oauth2.exception.ConflictFieldException;
+import oauth2.dto.AuthRequestDTO;
 import oauth2.dto.events_dto.EventWrapper;
 import oauth2.dto.events_dto.UserCreatedEvent;
 import oauth2.dto.UserRegisterDTO;
@@ -35,22 +37,24 @@ public class UserService {
     private final UserMapper mapper;
 
     @Transactional
-    public UserResponseDTO register (UserRegisterDTO registerDTO) {
-        if (repository.existsByCpf(registerDTO.cpf())) throw new IllegalArgumentException("Given CPF is already in use");
+    public UserResponseDTO register (AuthRequestDTO requestDTO) {
+        String cpf = requestDTO.cpf();
+        String rawPassword = requestDTO.password();
+
+        if (repository.existsByCpf(cpf)) throw new ConflictFieldException();
 
         Role role = roleRepository.findByRole("ROLE_USER")
                 .orElseThrow(() -> new IllegalArgumentException("Role not found"));
 
-        String encodedPassword = passwordEncoder.encode(registerDTO.password());
+        User user = new User(cpf, passwordEncoder.encode(rawPassword), new UserStatus());
+        user.getRoles().add(role);
 
-        User toSave = new User(registerDTO.cpf(), encodedPassword, new UserStatus());
-        toSave.getRoles().add(role);
+        return mapper.parseToResponse(user);
+    }
 
-        User saved = repository.save(toSave);
-
-        sendUserCreatedMessage(saved, registerDTO);
-
-        return mapper.parseToResponse(saved);
+    @Transactional
+    public void deleteById (Long id) {
+        repository.deleteById(id);
     }
 
     private void sendUserCreatedMessage (User createdUser, UserRegisterDTO registerDTO) {

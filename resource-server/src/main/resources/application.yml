@@ -22,6 +22,6 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          set_uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI}
+          jwt-set-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI}
 server:
   port: 8080

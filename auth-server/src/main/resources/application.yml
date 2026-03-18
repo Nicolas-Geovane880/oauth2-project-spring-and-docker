@@ -11,7 +11,7 @@ spring:
   security:
     oauth2:
       authorizationserver:
-        issuer: http://localhost:9000
+        issuer: http://auth-app:9000
   jpa:
     open-in-view: false
     hibernate:

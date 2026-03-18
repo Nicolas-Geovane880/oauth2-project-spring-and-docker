@@ -1,9 +1,7 @@
-package gateway.dto;
+package api.dto;
 
-import lombok.Builder;
 import java.time.LocalDate;
 
-@Builder
 public record ApiRequestDTO
         (String name,
 

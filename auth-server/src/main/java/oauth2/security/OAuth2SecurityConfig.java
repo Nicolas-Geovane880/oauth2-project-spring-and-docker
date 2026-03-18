@@ -37,8 +37,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OAuth2SecurityConfig {
 
-    private static final Logger log = LogManager.getLogger(OAuth2SecurityConfig.class);
-
     private final UserRepository userRepository;
     /**
      * <p>This first filter chain basically filter the authentication requests</p>
@@ -89,10 +87,10 @@ public class OAuth2SecurityConfig {
     @Bean
     @Order (2)
     public SecurityFilterChain defaultFilterChain (HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.ignoringRequestMatchers("/auth/v1/register"));
+        http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/v1/auth/"));
 
         http.authorizeHttpRequests(auth ->
-                auth.requestMatchers("/auth/v1/register").permitAll()
+                auth.requestMatchers("/api/v1/auth/").permitAll()
                 .anyRequest().authenticated());
 
         http.httpBasic(Customizer.withDefaults());

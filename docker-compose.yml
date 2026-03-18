@@ -62,7 +62,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${API_DB_PASSWORD}
       - SPRING_DATASOURCE_DRIVER=${DB_DRIVER}
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=${SECURITY_JWK_ISS}
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://auth-app:9000/oauth2/jwks
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=guest
@@ -91,6 +91,17 @@ services:
       - SPRING_RABBITMQ_PASSWORD=guest
     ports:
       - "9000:9000"
+
+  api_gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    depends_on:
+      - auth_app
+      - api_app
+    ports:
+      - "9090:9090"
 
 volumes:
   api_db_data:

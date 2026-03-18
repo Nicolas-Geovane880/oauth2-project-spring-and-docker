@@ -6,5 +6,5 @@ import java.time.Instant;
 @Builder
 public record UserResponseDTO
         (Long id,
-         String cpf,
+
          Instant createdAt) {}

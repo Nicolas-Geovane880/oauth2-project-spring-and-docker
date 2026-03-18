@@ -11,7 +11,6 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 public interface UserMapper {
 
     @Mapping (source = "user.id", target = "id")
-    @Mapping (source = "user.cpf", target = "cpf", qualifiedByName = "formatCpf")
     @Mapping (source = "user.userStatus.createdAt", target = "createdAt")
     UserResponseDTO parseToResponse (User user);
 
