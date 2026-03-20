@@ -16,10 +16,5 @@ public class UserController {
 
     private final UserService service;
 
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Void> deleteById (@PathVariable Long id) {
-        service.deleteById(id);
 
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
 }
