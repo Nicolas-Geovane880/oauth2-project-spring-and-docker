@@ -31,7 +31,7 @@ public class GlobalHandler {
     @ExceptionHandler (ConflictFieldException.class)
     public ResponseEntity<ExceptionResponse> handleConflictFieldException (ConflictFieldException ex,
                                                                            WebRequest request) {
-        ExceptionResponse details = ExceptionResponse.createDetails(ex.getMessage(), request, HttpStatus.CONFLICT, ex.errorsConflict);
+       xc EeptionResponse details = ExceptionResponse.createDetails(ex.getMessage(), request, HttpStatus.CONFLICT, ex.errorsConflict);
 
         return new ResponseEntity<>(details, HttpStatus.CONFLICT);
     }
