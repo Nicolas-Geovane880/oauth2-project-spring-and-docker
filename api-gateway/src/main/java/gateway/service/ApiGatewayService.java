@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,11 +83,9 @@ public class ApiGatewayService {
 
                     throw new ConflictFieldException(errors, "Some fields are conflicted");
                 }))
-
                 .onStatus(status -> status == HttpStatus.INTERNAL_SERVER_ERROR, ((request, response) -> {
                     throw new FatalErrorException("An unexpected error occurred while trying register the user");
                 }))
-
                 .body(AuthResponseDTO.class);
     }
 

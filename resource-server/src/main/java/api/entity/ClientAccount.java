@@ -3,6 +3,8 @@ package api.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table (name = "client_account")
 @Getter
@@ -25,7 +27,7 @@ public class ClientAccount {
     private Client client;
 
     @Column (name = "balance", nullable = false)
-    private Double balance;
+    private BigDecimal balance;
 
     @OneToOne (fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn (name = "account_transfer_lock_id", referencedColumnName = "id")
@@ -33,8 +35,17 @@ public class ClientAccount {
 
     public ClientAccount(Client client, String cpf) {
         this.accountTransferLock = new AccountTransferLock();
-        this.balance = 5000.00;
+        this.balance = new BigDecimal("5000");
         this.client = client;
         this.cpf = cpf;
+    }
+
+    public void discountBalance (BigDecimal value) {
+        if (this.balance.compareTo(value) < 0) throw new IllegalArgumentException("Insufficient balance.");
+        this.balance = this.balance.subtract(value);
+    }
+
+    public void addBalance (BigDecimal value) {
+        this.balance = this.balance.add(value);
     }
 }
