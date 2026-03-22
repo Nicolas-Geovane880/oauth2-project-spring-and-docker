@@ -5,3 +5,8 @@ app:
   services:
     auth-server: http://auth-app:9000
     api-server: http://api-app:8080
+
+spring:
+  messages:
+    basename: messages
+    encoding: UTF-8

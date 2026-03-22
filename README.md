@@ -1,42 +1,40 @@
-## Bank Project with OAuth2
+### Mudanças
 
-This project has been built to learn how the OAuth2 principles works
+Agora a `API Gateway` está funcionando como deveria, recebendo a requisição e interceptando as chamadas
+para as outras APIs.
 
-Basically, the OAuth2 Protocol exists to make the system limited to some data, like passwords or login credentials.
+* A `API gateway` agora tem uma validação robusta nas entidades de registro com Bean Validation.
 
-Parts of the protocol:
- - Resource Owner (Who wants to use the system)
- - Client (Who is an intermediate authorization grant and retrieve tokens)
- - Authentication Server (The system responsible for authenticating the user and sending tokens)
- - Resource Server (Where the data is stored, being the domain api)
+* O sistema conta com a padronização das mensagens de erro com o `messages.properties`.
 
-Flow: <br>
 
-The client directs the user to the auth server, and when the user is authenticated, the
-auth server asks the user if him let the client send his information to the Resource Server.
+* Agora o sistema tem o motor base para o funcionamento por eventos/mensagem com `RabbitMQ`, e essa
+  funcionalidade irá ser mais utilizada conforme o projeto avança.
 
-When the grant is gained, the Auth Server redirects the Client with a temporary code, and the Client can send this code to get a Token.
+A forma na qual o rollback acontece foi mudada:
 
-The Token will be used to the Client access the Resource Server which only handles with tokens, and no more authentication ways, being stateless
+* Anteriormente, quando o `Resource Server` falhava na criação do usuário (domínio da API), o **rollback** era feito
+ para apagar o usuário no `Authentication Server` (usuário de autenticação) para que ele não ficasse órfão no banco de dados. Porém,
+ para que isso acontecesse, o endpoint de apagar o usuário pelo seu ID no `Authentication Server` devia permanecer aberta.
 
-#### The Project So Far
 
-The project is still in early stage, and it won't work now.
+* Dado que isso é inseguro quando falamos em tráfegos pela rede, eu decidi realizar esse **rollback** com **mensageria** utilizando o `RabbitMQ`. Dessa forma
+o **rollback** estará definido mesmo quando o servidor estiver fora de ar, e o melhor é que barramos o endpoint de excluir o usuário pelo seu ID.
 
-I designed the system to work with events and messages with RabbitMQ, but a problem
-appeared: asynchronous validations!
+####  Próximas atualizações:
 
-The project was designed to when the resource owner registers in the system that passes through the auth server first,
-a message is sent to the resource server (the api) to register it domain (client bank and his account).
+* Fazer com que a API gateway intercepte todas as requisições, assim as portas 
+expostas de cada API poderá ser fechada, aumentando o grau de segurança.
 
-Even it looks fancy, the resource server (the api) has to validate the input, but since the message/event was sent expecting everything is ok,
-the api will invalidate an input when invalid, and the error will never be printed to the user.
 
-So I decided to create an orchestrator api (api gateway) to orchestrate both apis (the resource server and the auth server)
+* Concluir o `Resource Server` (a API que carrega o domínio) e suas funcionalidades.
 
------ 
 
-I've been using the Postman as a Client since my front end skills are not good enough to consume these apis.
+* Aumentar a segurança no `Authentication Server`, limitando a quantidade de tentativas de login por exemplo.
+
+
+
+
 
 
 

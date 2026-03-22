@@ -1,26 +1,27 @@
 package oauth2.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import oauth2.dto.events_dto.AuthUserRollbackEvent;
+import oauth2.dto.events_dto.EventType;
 import oauth2.exception.ConflictFieldException;
 import oauth2.dto.AuthRequestDTO;
 import oauth2.dto.events_dto.EventWrapper;
-import oauth2.dto.events_dto.UserCreatedEvent;
-import oauth2.dto.UserRegisterDTO;
 import oauth2.dto.UserResponseDTO;
 import oauth2.entity.Role;
 import oauth2.entity.User;
 import oauth2.entity.UserStatus;
-import oauth2.enums.EventType;
 import oauth2.mapper.UserMapper;
 import oauth2.repository.RoleRepository;
 import oauth2.repository.UserRepository;
+import org.springframework.amqp.rabbit.annotation.Exchange;
+import org.springframework.amqp.rabbit.annotation.Queue;
+import org.springframework.amqp.rabbit.annotation.QueueBinding;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -49,28 +50,27 @@ public class UserService {
         User user = new User(cpf, passwordEncoder.encode(rawPassword), new UserStatus());
         user.getRoles().add(role);
 
-        return mapper.parseToResponse(user);
+        User saved = repository.save(user);
+
+        return mapper.parseToResponse(saved);
     }
 
     @Transactional
-    public void deleteById (Long id) {
-        repository.deleteById(id);
-    }
+    @RabbitListener (bindings = @QueueBinding
+            (value = @Queue (value = "auth.server.rollback.event", durable = "true"),
+            exchange = @Exchange (value = "rollback.exchange", type = "topic"),
+            key = "api.failed"))
+    public void listenRollBackEvent (EventWrapper<?> eventWrapper) {
 
-    private void sendUserCreatedMessage (User createdUser, UserRegisterDTO registerDTO) {
-        UserCreatedEvent event = UserCreatedEvent.builder()
-                .authUserId(createdUser.getId())
-                .name(registerDTO.name())
-                .lastName(registerDTO.lastName())
-                .cpf(registerDTO.cpf())
-                .email(registerDTO.email())
-                .phone(registerDTO.phone())
-                .birthDate(registerDTO.birthDate())
-                .build();
+        if (eventWrapper.getEventType() == EventType.AUTH_USER_ROLLBACK) {
+            ObjectMapper objectMapper = new ObjectMapper();
 
-        EventWrapper<UserCreatedEvent> eventWrapper = new EventWrapper<>
-                (UUID.randomUUID(), EventType.USER_CREATED_EVENT, "v1", LocalDateTime.now(), event);
+            AuthUserRollbackEvent payload = objectMapper.convertValue
+                    (eventWrapper.getPayload(), AuthUserRollbackEvent.class);
 
-        rabbitTemplate.convertAndSend("auth.exchange", "user.created", eventWrapper);
+            if (repository.existsById(payload.authUserId())) {
+                repository.deleteById(payload.authUserId());
+            }
+        }
     }
 }

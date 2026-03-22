@@ -1,4 +1,4 @@
-package gateway.dto.event;
+package oauth2.dto.events_dto;
 
 public enum EventType {
 

@@ -1,7 +1,6 @@
 package oauth2.dto.events_dto;
 
 import lombok.*;
-import oauth2.enums.EventType;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
