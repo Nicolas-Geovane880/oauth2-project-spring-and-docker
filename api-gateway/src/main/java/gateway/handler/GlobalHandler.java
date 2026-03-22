@@ -31,6 +31,8 @@ public class GlobalHandler {
     @ExceptionHandler (ConflictFieldException.class)
     public ResponseEntity<ExceptionResponse> handleConflictFieldException (ConflictFieldException ex,
                                                                            WebRequest request) {
+
+        System.out.println("Fix the pull request please");
         ExceptionResponse details = ExceptionResponse.createDetails(ex.getMessage(), request, HttpStatus.CONFLICT, ex.errorsConflict);
 
         return new ResponseEntity<>(details, HttpStatus.CONFLICT);
