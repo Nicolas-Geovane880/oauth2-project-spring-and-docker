@@ -1,10 +1,13 @@
 package api;
 
+import api.dto.ExtractResponseDTO;
+import api.dto.TransferResponseDTO;
 import api.entity.AccountTransferLock;
 import api.entity.Client;
 import api.entity.ClientAccount;
 import org.testcontainers.shaded.org.checkerframework.checker.units.qual.C;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
@@ -25,8 +28,38 @@ public class EntityGetter {
         return ClientAccount.builder()
                 .cpf("12345678900")
                 .client(client)
-                .accountTransferLock(new AccountTransferLock())
-                .balance(1000.0)
+                .accountTransferLock(getAccountTransferLock())
+                .balance(new BigDecimal("1000.00"))
+                .build();
+    }
+
+    public AccountTransferLock getAccountTransferLock () {
+        return AccountTransferLock.builder()
+                .lastTransferDate(null)
+                .totalValueTransferredToday(BigDecimal.ZERO)
+                .build();
+    }
+
+    public TransferResponseDTO getTransferResponseDTO (ClientAccount source,
+                                                       ClientAccount target,
+                                                       BigDecimal value,
+                                                       String anonymizedSourceCPF,
+                                                       String anonymizedTargetCPF) {
+        return TransferResponseDTO.builder()
+                .sourceCPF(anonymizedSourceCPF)
+                .sourceName(source.getClient() == null ? null : source.getClient().getName())
+                .targetCPF(anonymizedTargetCPF)
+                .targetName(target.getClient() == null ? null : target.getClient().getName())
+                .value(value)
+                .build();
+    }
+
+    public ExtractResponseDTO getExtractResponseDTO (ClientAccount clientAccount) {
+        return ExtractResponseDTO.builder()
+                .name(clientAccount.getClient() == null ? null : clientAccount.getClient().getName() + " " + clientAccount.getClient().getLastName())
+                .cpf(clientAccount.getCpf())
+                .balance(clientAccount.getBalance())
+                .remainingTransferLimitValue(new BigDecimal("2000.00"))
                 .build();
     }
 

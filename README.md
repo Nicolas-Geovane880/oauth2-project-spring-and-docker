@@ -1,36 +1,26 @@
 ### Mudanças
 
-Agora a `API Gateway` está funcionando como deveria, recebendo a requisição e interceptando as chamadas
-para as outras APIs.
+O `Resource Server` (a API bancária) recebeu novas funcionalidades:
 
-* A `API gateway` agora tem uma validação robusta nas entidades de registro com Bean Validation.
-
-* O sistema conta com a padronização das mensagens de erro com o `messages.properties`.
+* Transferência: Um usuário agora pode transferir uma quantia de dinheiro para outra conta,
+  porém o sistema conta com um mecanismo de limite de transferência diária.
 
 
-* Agora o sistema tem o motor base para o funcionamento por eventos/mensagem com `RabbitMQ`, e essa
-  funcionalidade irá ser mais utilizada conforme o projeto avança.
-
-A forma na qual o rollback acontece foi mudada:
-
-* Anteriormente, quando o `Resource Server` falhava na criação do usuário (domínio da API), o **rollback** era feito
- para apagar o usuário no `Authentication Server` (usuário de autenticação) para que ele não ficasse órfão no banco de dados. Porém,
- para que isso acontecesse, o endpoint de apagar o usuário pelo seu ID no `Authentication Server` devia permanecer aberta.
+* Extrato: O usuário autenticado pode ver o seu extrato bancário de forma segura.
 
 
-* Dado que isso é inseguro quando falamos em tráfegos pela rede, eu decidi realizar esse **rollback** com **mensageria** utilizando o `RabbitMQ`. Dessa forma
-o **rollback** estará definido mesmo quando o servidor estiver fora de ar, e o melhor é que barramos o endpoint de excluir o usuário pelo seu ID.
+* Histórico de transferências: O usuário autenticado pode ver o histórico de transferências enviadas e recebidas.
+  Um Page é retornado com o histórico é enviado como resposta.
 
-####  Próximas atualizações:
+A `API gateway` está sendo modificada para que ela intercepte todas as chamadas para as outras APIs
 
-* Fazer com que a API gateway intercepte todas as requisições, assim as portas 
-expostas de cada API poderá ser fechada, aumentando o grau de segurança.
+Por enquanto, há `Controllers` iguais aos do `Resource Server `na `API gateway` para que as requisições possam
+ser encaminhadas para a `Resource Server` (a API bancária).
+Porém, para contornar esse retrabalho de criar todos os endpoints, irei utilizar a ferramenta Spring Cloud Gateway, que basicamente
+automatiza esse processo de redirecionamento de APIs sem escrever nenhum `Controller`, apenas informando algumas configurações básicas no
+arquivo de configuração.
 
-
-* Concluir o `Resource Server` (a API que carrega o domínio) e suas funcionalidades.
-
-
-* Aumentar a segurança no `Authentication Server`, limitando a quantidade de tentativas de login por exemplo.
+  
 
 
 

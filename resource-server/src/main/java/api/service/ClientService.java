@@ -1,10 +1,6 @@
 package api.service;
 
-import api.dto.ApiRequestDTO;
-import api.dto.event_dto.UserCreatedEvent;
 import api.entity.Client;
-import api.factory.ClientFactory;
-import api.mapper.AccountRegisterMapper;
 import api.repository.ClientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

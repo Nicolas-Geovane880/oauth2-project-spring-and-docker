@@ -10,3 +10,8 @@ spring:
   datasource:
     hikari:
       maximum-pool-size: 3
+
+app:
+  services:
+    auth-server: http://localhost:8090
+    api-server: http://localhost:8090

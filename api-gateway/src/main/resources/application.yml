@@ -3,10 +3,16 @@ server:
 
 app:
   services:
-    auth-server: http://auth-app:9000
-    api-server: http://api-app:8080
+    auth-server: http://localhost:9000
+    api-server: http://localhost:8080
 
 spring:
   messages:
     basename: messages
     encoding: UTF-8
+
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USER:guest}
+    password: ${RABBIT_PASS:guest}

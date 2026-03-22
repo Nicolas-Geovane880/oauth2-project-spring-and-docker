@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping (value = "/api/v1/account")
+@RequestMapping (value = "/gateway/v1/account")
 @RequiredArgsConstructor
 public class RegisterController {
 
@@ -22,7 +22,7 @@ public class RegisterController {
     public ResponseEntity<Void> register (@Valid @RequestBody AccountRegisterDTO registerDTO) {
         service.orchestrateAccountRegister(registerDTO);
 
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 }
 
