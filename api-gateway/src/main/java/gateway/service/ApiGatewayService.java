@@ -83,6 +83,7 @@ public class ApiGatewayService {
 
                     throw new ConflictFieldException(errors, "Some fields are conflicted");
                 }))
+
                 .onStatus(status -> status == HttpStatus.INTERNAL_SERVER_ERROR, ((request, response) -> {
                     throw new FatalErrorException("An unexpected error occurred while trying register the user");
                 }))
