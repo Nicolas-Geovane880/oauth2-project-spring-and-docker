@@ -1,6 +1,8 @@
 package api.service;
 
-import api.dto.TransferRequestDTO;
+import api.constant.ConstantValue;
+import api.constant.ErrorsMessage;
+import api.dto.TransferCreateDTO;
 import api.dto.TransferResponseDTO;
 import api.entity.ClientAccount;
 import api.entity.Transfer;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -26,13 +29,13 @@ public class TransferService {
     private final TransferMapper mapper;
 
     @Transactional
-    public TransferResponseDTO makeTransfer (Long sourceAuthUserId, TransferRequestDTO requestDTO) {
-        ClientAccount sourceTemp = clientAccountService.findByClientAuthUserId(sourceAuthUserId);
+    public TransferResponseDTO makeTransfer (UUID clientCode, TransferCreateDTO requestDTO) {
+        ClientAccount sourceTemp = clientAccountService.findByClientCode(clientCode);
 
         ClientAccount targetTemp = clientAccountService.findByCpf(requestDTO.targetCPF());
 
         if (sourceTemp.getId().equals(targetTemp.getId())) {
-            throw new InvalidTransferException("You can not transfer to yourself");
+            throw new InvalidTransferException(ErrorsMessage.TRANSFER_TO_YOURSELF);
         }
 
         long firstToLock = Math.min(sourceTemp.getId(), targetTemp.getId());
@@ -59,16 +62,16 @@ public class TransferService {
     }
 
     @Transactional (readOnly = true)
-    public Page<TransferResponseDTO> transferHistoric (Long authUserId, int page, int size) {
+    public Page<TransferResponseDTO> transferHistoric (UUID clientCode, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by("transferredAt").descending());
 
-        Page<Transfer> allByAccount = repository.findAllByAuthUserId(authUserId, pageRequest);
+        Page<Transfer> allByAccount = repository.findAllByClientCode(clientCode, pageRequest);
 
         return allByAccount.map(mapper::toTransferResponseDTO);
     }
 
     private void handleTransferLimit (BigDecimal value, ClientAccount sourceAccount) {
-        BigDecimal limit = new BigDecimal("5000.0");
+        BigDecimal limit = new BigDecimal(ConstantValue.LIMIT_TRANSFER_VALUE);
 
         sourceAccount.getAccountTransferLock().resetIfIsNewDay();
 
@@ -76,8 +79,9 @@ public class TransferService {
 
         if (totalValueTransferredToday.add(value).compareTo(limit) > 0) {
             BigDecimal remainingValue = limit.subtract(totalValueTransferredToday);
-            String additionalMessage = remainingValue.compareTo(BigDecimal.ZERO) == 0 ? "" : " You can only transfer R$" + remainingValue.toPlainString();
-            throw new InvalidTransferException("This value would overpass your daily transfer limit." + additionalMessage);
+            String additionalMessage = remainingValue.compareTo(BigDecimal.ZERO) == 0 ? "" : " You can only transfer R$" + remainingValue.toPlainString() + " today";
+
+            throw new InvalidTransferException(ErrorsMessage.TRANSFER_LIMIT_OVERPASSED, additionalMessage);
         }
 
         sourceAccount.getAccountTransferLock().increaseValueTransferredToday(value);

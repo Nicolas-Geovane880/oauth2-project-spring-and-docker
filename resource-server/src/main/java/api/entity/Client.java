@@ -1,9 +1,13 @@
 package api.entity;
 
+import api.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Table (name = "client")
@@ -18,6 +22,10 @@ public class Client {
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column (name = "code", nullable = false, unique = true, updatable = false)
+    @JdbcTypeCode (SqlTypes.VARCHAR)
+    private UUID code;
 
     @Column (name = "name", nullable = false)
     private String name;
@@ -37,6 +45,13 @@ public class Client {
     @Column (name = "age", nullable = false)
     private int age;
 
-    @Column (name = "auth_user_id", nullable = false)
-    private Long authUserId;
+    @Column (name = "status", nullable = false)
+    @Enumerated (value = EnumType.STRING)
+    private Status status;
+
+    @PrePersist
+    protected void setUUID () {
+        this.code = UUID.randomUUID();
+        this.status = Status.PENDING;
+    }
 }

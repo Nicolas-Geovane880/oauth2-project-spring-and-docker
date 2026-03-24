@@ -1,6 +1,6 @@
 package api.controller;
 
-import api.dto.TransferRequestDTO;
+import api.dto.TransferCreateDTO;
 import api.dto.TransferResponseDTO;
 import api.service.TransferService;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping ("/api/v1/transfer")
@@ -21,10 +21,10 @@ public class TransferController {
     private final TransferService service;
 
     @PostMapping (value = "/")
-    public ResponseEntity<TransferResponseDTO> makeTransfer (@AuthenticationPrincipal Jwt principal, @RequestBody TransferRequestDTO requestDTO) {
-        long sourceAuthUserId = Long.parseLong(principal.getSubject());
+    public ResponseEntity<TransferResponseDTO> makeTransfer (@AuthenticationPrincipal Jwt principal, @RequestBody TransferCreateDTO requestDTO) {
+        UUID clientCode = UUID.fromString(principal.getSubject());
 
-        TransferResponseDTO response = service.makeTransfer(sourceAuthUserId, requestDTO);
+        TransferResponseDTO response = service.makeTransfer(clientCode, requestDTO);
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -33,9 +33,9 @@ public class TransferController {
     public ResponseEntity<Page<TransferResponseDTO>> transferHistoric (@AuthenticationPrincipal Jwt principal,
                                                                        @RequestParam (required = false, defaultValue = "0") int page,
                                                                        @RequestParam (required = false, defaultValue = "10") int size) {
-        long sourceAuthUserId = Long.parseLong(principal.getSubject());
+        UUID clientCode = UUID.fromString(principal.getSubject());
 
-        Page<TransferResponseDTO> response = service.transferHistoric(sourceAuthUserId, page, size);
+        Page<TransferResponseDTO> response = service.transferHistoric(clientCode, page, size);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

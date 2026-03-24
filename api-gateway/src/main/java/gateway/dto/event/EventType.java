@@ -1,6 +1,0 @@
-package gateway.dto.event;
-
-public enum EventType {
-
-    AUTH_USER_ROLLBACK
-}

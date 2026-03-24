@@ -8,9 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface TransferRepository extends JpaRepository<Transfer, Long> {
 
-    @Query ("SELECT t FROM Transfer t WHERE t.sourceAccount.client.authUserId = :authUserId OR t.targetAccount.client.authUserId = :authUserId")
-    Page<Transfer> findAllByAuthUserId (@Param (value = "authUserId") Long authUserId, Pageable pageable);
+    @Query ("SELECT t FROM Transfer t WHERE t.sourceAccount.client.code = :clientCode OR t.targetAccount.client.code = :clientCode")
+    Page<Transfer> findAllByClientCode (@Param (value = "clientCode") UUID clientCode, Pageable pageable);
 }

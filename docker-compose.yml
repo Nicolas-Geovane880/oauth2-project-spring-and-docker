@@ -9,8 +9,8 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
-    volumes:
-      - rabbitmq:/var/lib/rabbitmq
+#    volumes:
+#      - rabbitmq:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
@@ -22,8 +22,8 @@ services:
     environment:
       MYSQL_DATABASE: ${API_DB_NAME}
       MYSQL_ROOT_PASSWORD: ${API_DB_PASSWORD}
-    volumes:
-      - api_db_data:/var/lib/mysql
+#    volumes:
+#      - api_db_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
@@ -37,8 +37,8 @@ services:
     environment:
       MYSQL_DATABASE: ${AUTH_DB_NAME}
       MYSQL_ROOT_PASSWORD: ${AUTH_DB_PASSWORD}
-    volumes:
-      - auth_db_data:/var/lib/mysql
+#    volumes:
+#      - auth_db_data:/var/lib/mysql
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       timeout: 20s
@@ -103,10 +103,10 @@ services:
 #    ports:
 #      - "9090:9090"
 
-volumes:
-  api_db_data:
-  auth_db_data:
-  rabbitmq:
+#volumes:
+#  api_db_data:
+#  auth_db_data:
+#  rabbitmq:
 
 
 

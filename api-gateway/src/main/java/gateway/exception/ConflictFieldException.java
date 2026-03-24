@@ -1,13 +1,16 @@
 package gateway.exception;
 
-import java.util.Map;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.springframework.http.HttpStatusCode;
 
+@AllArgsConstructor
+@Getter
 public class ConflictFieldException extends RuntimeException {
 
-    public final Map<String, String> errorsConflict;
+    private String exceptionBody;
 
-    public ConflictFieldException(Map<String, String> errorsConflict, String message) {
-        super(message);
-        this.errorsConflict = errorsConflict;
-    }
+    private HttpStatusCode statusCode;
+
+
 }

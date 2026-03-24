@@ -87,10 +87,10 @@ public class OAuth2SecurityConfig {
     @Bean
     @Order (2)
     public SecurityFilterChain defaultFilterChain (HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/v1/auth/"));
+        http.csrf(csrf -> csrf.ignoringRequestMatchers("/auth/v1/users/"));
 
         http.authorizeHttpRequests(auth ->
-                auth.requestMatchers("/api/v1/auth/").permitAll()
+                auth.requestMatchers("/auth/v1/users/").permitAll()
                 .anyRequest().authenticated());
 
         http.httpBasic(Customizer.withDefaults());
@@ -117,7 +117,7 @@ public class OAuth2SecurityConfig {
                             .toList();
 
                     context.getClaims().claim("role", roles);
-                    context.getClaims().subject(String.valueOf(user.getId()));
+                    context.getClaims().subject(String.valueOf(user.getCode()));
                 }
             }
         };

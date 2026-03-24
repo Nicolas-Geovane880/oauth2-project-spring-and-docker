@@ -1,5 +1,7 @@
 package api.service;
 
+import api.constant.ConstantValue;
+import api.constant.ErrorsMessage;
 import api.dto.ExtractResponseDTO;
 import api.entity.AccountTransferLock;
 import api.entity.Client;
@@ -13,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -27,33 +30,41 @@ public class ClientAccountService {
                 .cpf(cpf)
                 .client(client)
                 .accountTransferLock(new AccountTransferLock())
-                .balance(new BigDecimal("5000.00"))
+                .balance(new BigDecimal(ConstantValue.LIMIT_TRANSFER_VALUE))
                 .build();
 
         return repository.save(clientAccount);
     }
 
     @Transactional (readOnly = true)
-    public ExtractResponseDTO extract (Long authUserId) {
-        ClientAccount clientAccount = findByClientAuthUserId(authUserId);
+    public ExtractResponseDTO extract (UUID clientCode) {
+        ClientAccount clientAccount = findByClientCode(clientCode);
 
-        BigDecimal remainingTransferLimitValue = new BigDecimal("5000.00").subtract(clientAccount.getAccountTransferLock().getTotalValueTransferredToday());
+        BigDecimal remainingTransferLimitValue = new BigDecimal(ConstantValue.LIMIT_TRANSFER_VALUE).subtract(clientAccount.getAccountTransferLock().getTotalValueTransferredToday());
 
         return mapper.toExtractResponseDTO(clientAccount, remainingTransferLimitValue);
     }
 
     public ClientAccount findByCpf (String cpf) {
         return repository.findByCpf(cpf)
-                .orElseThrow(() -> new NoResourceFoundException("Client account not found"));
+                .orElseThrow(() -> new NoResourceFoundException(ErrorsMessage.CLIENT_ACCOUNT_NOT_FOUND, "cpf", cpf));
     }
 
-    public ClientAccount findByClientAuthUserId (Long authUserId) {
-        return repository.findByClientAuthUserId(authUserId)
-                .orElseThrow(() -> new NoResourceFoundException("Client account not found"));
+    public ClientAccount findByClientCode (UUID clientCode) {
+        return repository.findByClientCode(clientCode)
+                .orElseThrow(() -> new NoResourceFoundException(ErrorsMessage.CLIENT_ACCOUNT_NOT_FOUND, "code", clientCode.toString()));
     }
 
     public ClientAccount findLockedById(Long id) {
         return repository.findLockedById(id)
-                .orElseThrow(() -> new NoResourceFoundException("Client account not found"));
+                .orElseThrow(() -> new NoResourceFoundException(ErrorsMessage.CLIENT_ACCOUNT_NOT_FOUND, "id", id.toString()));
+    }
+
+    public boolean existsByCpf (String cpf) {
+        return repository.existsByCpf(cpf);
+    }
+
+    public void deleteByClientCode (UUID code) {
+        repository.deleteByClientCode(code);
     }
 }

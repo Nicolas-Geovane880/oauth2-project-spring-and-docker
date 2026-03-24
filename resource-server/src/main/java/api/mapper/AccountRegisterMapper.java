@@ -1,17 +1,22 @@
 package api.mapper;
 
-import api.dto.ApiRequestDTO;
+import api.dto.UserAccountResponseDTO;
+import api.dto.event_dto.AuthUserRegisterEventDTO;
+import api.dto.UserAccountRegisterDTO;
 import api.entity.Client;
-import api.entity.ClientAccount;
 import org.mapstruct.*;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Mapper (componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface AccountRegisterMapper {
 
     @Mapping (source = "birthDate", target = "age", qualifiedByName = "calculateAge")
-    Client toClient (ApiRequestDTO apiRequestDTO);
+    Client toClient (UserAccountRegisterDTO apiRequestDTO);
+
+    @Mapping (source = "client.code", target = "clientCode")
+    UserAccountResponseDTO toUserAccountResponseDTO (Client client, String cpf);
 
     @Named (value = "calculateAge")
     static int calculateAge (LocalDate birthDate) {

@@ -15,6 +15,4 @@ public record ApiRequestDTO
 
          LocalDate birthDate,
 
-         String phone,
-
-         Long authUserId) {}
+         String phone) {}

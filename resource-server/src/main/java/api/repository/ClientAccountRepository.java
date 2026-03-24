@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface ClientAccountRepository extends JpaRepository<ClientAccount, Long> {
@@ -16,8 +17,10 @@ public interface ClientAccountRepository extends JpaRepository<ClientAccount, Lo
 
     Optional<ClientAccount> findByCpf (String cpf);
 
-    Optional<ClientAccount> findByClientAuthUserId (Long authUserId);
-
     @Lock (value = LockModeType.PESSIMISTIC_WRITE)
     Optional<ClientAccount> findLockedById (Long id);
+
+    void deleteByClientCode(UUID code);
+
+    Optional<ClientAccount> findByClientCode (UUID clientCode);
 }

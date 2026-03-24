@@ -1,28 +1,41 @@
 ### Mudanças
 
-O `Resource Server` (a API bancária) recebeu novas funcionalidades:
+A `API gateway` agora usa o mecanismo do Spring Cloud Gateway, substituindo todos os `Controllers` e
+camadas de `Serviço` que faziam chamadas `HTTP` para os outros serviços. Agora, o gateway apenas
+roteia as requisições conforme a `URL` da requisição.
 
-* Transferência: Um usuário agora pode transferir uma quantia de dinheiro para outra conta,
-  porém o sistema conta com um mecanismo de limite de transferência diária.
+### O processo de registro do usuário foi **reformulada** !
+
+O registro do usuário segue o padrão chamado `SAGA`:
+
+* A `API gateway`, por meio do **Spring Cloud Gateway**, roteia a requisição para o `Resource Server`.
 
 
-* Extrato: O usuário autenticado pode ver o seu extrato bancário de forma segura.
+* O `Resource Server` (a API bancária que carrega o domínio), valida os inputs, cadastra o cliente e manda um **evento**
+  com `RabbitMQ` dizendo que o cliente foi criado.
 
 
-* Histórico de transferências: O usuário autenticado pode ver o histórico de transferências enviadas e recebidas.
-  Um Page é retornado com o histórico é enviado como resposta.
+* O `Authentication Server` (a API responsável pelo login), escuta que esse evento ocorreu, e cria o usuário de autentição com os dados
+  transmitidos por meio da mensagem do evento (o payload).
 
-A `API gateway` está sendo modificada para que ela intercepte todas as chamadas para as outras APIs
 
-Por enquanto, há `Controllers` iguais aos do `Resource Server `na `API gateway` para que as requisições possam
-ser encaminhadas para a `Resource Server` (a API bancária).
-Porém, para contornar esse retrabalho de criar todos os endpoints, irei utilizar a ferramenta Spring Cloud Gateway, que basicamente
-automatiza esse processo de redirecionamento de APIs sem escrever nenhum `Controller`, apenas informando algumas configurações básicas no
-arquivo de configuração.
+* Como o `Saga Pattern` exige uma forma de compensar os primeiros processos, o `Authentication Server` manda outro **evento**
+  dizendo sobre a condição da criação do usuário:
 
+  - Caso crie o usuário de autenticação com sucesso, um evento é disparado com o status 'SUCCESS'. O `Resource Server`, recebe esse
+    evento e atualiza o status do cliente para 'ACTIVE'.
   
+  - Caso a criação falhe, um evento é disparado com o status 'FAILED'. O `Resource Server` recebe o evento e inicializa
+  o rollback, excluindo o cliente do banco de dados para não ter erros com colunas UNIQUES em registros futuros. 
+  
+O fato de retirar a lógica de registro da `API gateway`, foi necessário mover toda a validação de inputs
+para o `Resource Server`, acrescentando mais responsabilidades sobre a API, tornando-a sobrecarregada.
 
+### Próximas mudanças
 
+* Implementar algumas padronizações em todo o código
+* Implementar o UPDATE e DELETE
+* Implementar o limite de tentativas de login
 
 
 

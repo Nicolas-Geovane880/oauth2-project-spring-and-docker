@@ -1,0 +1,2 @@
+ALTER TABLE client
+ADD COLUMN status VARCHAR (15) NOT NULL;
