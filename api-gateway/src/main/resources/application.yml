@@ -7,6 +7,20 @@ app:
     api-server: http://localhost:8080
 
 spring:
+  cloud:
+    gateway:
+      routes:
+        - id: api-route
+          uri: http://localhost:8080
+          predicates:
+            - Path=/api/**
+
+        - id: auth-route
+          uri: http://localhost:9000
+          predicates:
+            - Path=/auth/**, /oauth2/**, /login/**
+
+
   messages:
     basename: messages
     encoding: UTF-8

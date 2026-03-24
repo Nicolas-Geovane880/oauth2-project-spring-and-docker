@@ -23,8 +23,7 @@ public class OAuth2JWTConfig {
         http.csrf(AbstractHttpConfigurer::disable);
 
         http.authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/validate/").permitAll()
-                        .requestMatchers("/api/v1/client/").permitAll()
+                        .requestMatchers("/api/v1/account/").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(Customizer.withDefaults())

@@ -6,6 +6,7 @@ import api.entity.ClientAccount;
 import api.mapper.BankAccountMapper;
 import api.repository.ClientAccountRepository;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,15 +37,16 @@ class ClientAccountServiceTest {
     private final EntityGetter entityGetter = new EntityGetter();
 
     @Test
+    @DisplayName (value = "Should show the extract successfully")
     void extract() {
         ClientAccount clientAccount = entityGetter.getClientAccount(entityGetter.getClient());
 
         ExtractResponseDTO expectedResponse = entityGetter.getExtractResponseDTO(clientAccount);
 
-        when(repository.findByClientAuthUserId(anyLong())).thenReturn(Optional.of(clientAccount));
+        when(repository.findByClientCode(any(UUID.class))).thenReturn(Optional.of(clientAccount));
         when(mapper.toExtractResponseDTO(any(ClientAccount.class), any(BigDecimal.class))).thenReturn(expectedResponse);
 
-        ExtractResponseDTO response = service.extract(1L);
+        ExtractResponseDTO response = service.extract(UUID.randomUUID());
 
         Assertions.assertNotNull(response);
         Assertions.assertEquals(response.cpf(), expectedResponse.cpf());

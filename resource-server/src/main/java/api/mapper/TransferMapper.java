@@ -16,6 +16,7 @@ public interface TransferMapper {
     @Mapping (source = "sourceAccount.cpf", target = "sourceCPF", qualifiedByName = "anonymizeCPF")
     @Mapping (source = "targetAccount.cpf", target = "targetCPF", qualifiedByName = "anonymizeCPF")
     @Mapping (source = "transferredAt", target = "transferredAt")
+    @Mapping (source = "code", target = "code")
     TransferResponseDTO toTransferResponseDTO (Transfer transfer);
 
     @Named (value = "anonymizeCPF")

@@ -34,5 +34,10 @@ spring:
         jwt:
 #          jwt-set-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI}
           jwk-set-uri: http://localhost:9000/oauth2/jwks
+
+  messages:
+    basename: messages
+    encoding: UTF-8
+
 server:
   port: 8080

@@ -1,9 +1,7 @@
 package gateway.handler;
 
-import gateway.constant.ErrorsMessage;
 import gateway.exception.ConflictFieldException;
 import gateway.exception.FatalErrorException;
-import gateway.exception.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -29,13 +27,10 @@ public class GlobalHandler {
     private final MessageSource messageSource;
 
     @ExceptionHandler (ConflictFieldException.class)
-    public ResponseEntity<ExceptionResponse> handleConflictFieldException (ConflictFieldException ex,
-                                                                           WebRequest request) {
-
-        System.out.println("Fix the pull request please");
-        ExceptionResponse details = ExceptionResponse.createDetails(ex.getMessage(), request, HttpStatus.CONFLICT, ex.errorsConflict);
-
-        return new ResponseEntity<>(details, HttpStatus.CONFLICT);
+    public ResponseEntity<String> handleConflictFieldException (ConflictFieldException ex) {
+        return ResponseEntity.status(ex.getStatusCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ex.getExceptionBody());
     }
 
     @ExceptionHandler (FatalErrorException.class)
@@ -53,7 +48,7 @@ public class GlobalHandler {
                 .collect(Collectors.toMap(FieldError::getField,
                         field -> field.getDefaultMessage() == null ? "Invalid field" : field.getDefaultMessage()));
 
-        String translatedMessage = translateMessage(ErrorsMessage.INVALID_FIELD);
+        String translatedMessage = translateMessage("Test");
 
         ExceptionResponse details = ExceptionResponse.createDetails(translatedMessage, request, HttpStatus.BAD_REQUEST, errors);
 
