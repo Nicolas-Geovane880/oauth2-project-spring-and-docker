@@ -1,24 +1,49 @@
 package api.mapper;
 
-import api.dto.ExtractResponseDTO;
+import api.dto.BankAccountRegisterDTO;
+import api.dto.UserAccountResponseDTO;
+import api.dto.UserAccountUpdateDTO;
+import api.entity.BankAccountUpdateHolder;
 import api.entity.Client;
 import api.entity.ClientAccount;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
-import org.mapstruct.NullValuePropertyMappingStrategy;
-import java.math.BigDecimal;
+import org.mapstruct.*;
+
+import java.time.LocalDate;
 
 @Mapper (componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface BankAccountMapper {
 
-    @Mapping (source = "clientAccount.cpf", target = "cpf")
-    @Mapping (source = "clientAccount.client", target = "name", qualifiedByName = "formFullName")
-    @Mapping (source = "remainingTransferLimitValue", target = "remainingTransferLimitValue")
-    ExtractResponseDTO toExtractResponseDTO (ClientAccount clientAccount, BigDecimal remainingTransferLimitValue);
+    @Mapping (source = "birthDate", target = "age", qualifiedByName = "calculateAge")
+    Client toClient (BankAccountRegisterDTO apiRequestDTO);
+
+    @Mapping (source = "client.code", target = "clientCode")
+    @Mapping (source = "client", target = "name", qualifiedByName = "formFullName")
+    UserAccountResponseDTO toUserAccountResponseDTO (Client client, String cpf);
+
+    BankAccountUpdateHolder toBankAccountUpdateHolder (UserAccountUpdateDTO updateDTO);
+
+    void update (BankAccountUpdateHolder updateHolder, @MappingTarget ClientAccount clientAccount);
+
+    void updateClient (BankAccountUpdateHolder updateHolder, @MappingTarget Client client);
+
+    @AfterMapping
+    default void updateClientAccount (BankAccountUpdateHolder updateHolder, @MappingTarget ClientAccount clientAccount) {
+        Client linkedClient = clientAccount.getClient();
+
+        updateClient(updateHolder, linkedClient);
+
+        int updatedAge = calculateAge(linkedClient.getBirthDate());
+
+        linkedClient.setAge(updatedAge);
+    }
 
     @Named(value = "formFullName")
     static String formFullName (Client client) {
         return client.getLastName() == null ? client.getName(): client.getName() + " " + client.getLastName();
+    }
+
+    @Named (value = "calculateAge")
+    static int calculateAge (LocalDate birthDate) {
+        return LocalDate.now().getYear() - birthDate.getYear();
     }
 }

@@ -12,9 +12,9 @@ CREATE TABLE IF NOT EXISTS `client` (
     `name` VARCHAR (80) NOT NULL,
     `last_name` VARCHAR (80),
     `email` VARCHAR (80) NOT NULL,
-    `phone` VARCHAR (20) NOT NULL,
+    `phone` VARCHAR (80) NOT NULL,
     `age` INT NOT NULL,
-    `birth_date` TIMESTAMP NOT NULL,
+    `birth_date` TIMESTAMP NULL DEFAULT NULL,
     `auth_user_id` BIGINT NOT NULL,
 
     PRIMARY KEY (`id`),
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `client` (
 
 CREATE TABLE IF NOT EXISTS `client_account` (
     `id` BIGINT AUTO_INCREMENT,
-    `cpf` VARCHAR (11) NOT NULL,
+    `cpf` VARCHAR (60) NOT NULL,
     `client_id` BIGINT NOT NULL,
     `balance` DECIMAL (6,2) NOT NULL,
     `account_transfer_lock_id` BIGINT NOT NULL,

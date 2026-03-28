@@ -37,7 +37,7 @@ public class User implements UserDetails {
     private String password;
 
     @JsonIgnore
-    @OneToOne (fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne (fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn (name = "user_status_id", referencedColumnName = "id")
     private UserStatus userStatus;
 
@@ -46,13 +46,6 @@ public class User implements UserDetails {
                 joinColumns = {@JoinColumn (name = "user_id")},
                 inverseJoinColumns = {@JoinColumn (name = "role_id")})
     private List<Role> roles;
-
-    public User (String cpf, String encodedPassword, UserStatus userStatus) {
-        this.cpf = cpf;
-        this.password = encodedPassword;
-        this.userStatus = userStatus;
-        this.roles = new ArrayList<>();
-    }
 
     public User (UUID clientCode, String cpf, String encodedPassword, UserStatus userStatus) {
         this.cpf = cpf;

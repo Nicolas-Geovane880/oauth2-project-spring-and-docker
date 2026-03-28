@@ -1,8 +1,8 @@
-package oauth2.dto.events_dto;
+package api.dto.event_dto;
 
 import java.util.UUID;
 
-public record AuthUserRegisterEventDTO
+public record AuthUserEventDTO
 
         (UUID clientCode,
 

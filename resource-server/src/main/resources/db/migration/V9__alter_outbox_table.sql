@@ -1,0 +1,2 @@
+ALTER TABLE outbox
+ADD COLUMN event_type VARCHAR (50);

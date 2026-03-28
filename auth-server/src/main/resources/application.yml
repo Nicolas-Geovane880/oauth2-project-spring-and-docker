@@ -32,6 +32,11 @@ spring:
     username: ${RABBIT_USER:guest}
     password: ${RABBIT_PASS:guest}
 
+logging:
+  level:
+    root: WARN
+    org.hibernate: ERROR
+
 #      SPRING_RABBITMQ_HOST=rabbitmq
       #      - SPRING_RABBITMQ_PORT=5672
       #      - SPRING_RABBITMQ_USERNAME=guest

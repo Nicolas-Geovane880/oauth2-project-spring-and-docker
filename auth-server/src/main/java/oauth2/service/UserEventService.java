@@ -2,7 +2,7 @@ package oauth2.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import oauth2.dto.events_dto.AuthUserRegisterEventDTO;
+import oauth2.dto.events_dto.AuthUserEventDTO;
 import oauth2.dto.events_dto.AuthUserStatusEventDTO;
 import oauth2.entity.ProcessedEvent;
 import oauth2.repository.ProcessedEventRepository;
@@ -31,36 +31,83 @@ public class UserEventService {
     private final RabbitTemplate rabbitTemplate;
 
     @RabbitListener (bindings = @QueueBinding
-            (value = @Queue (value = "auth.create.queue", durable = "true"),
-            exchange = @Exchange (value = "auth.user.exchange", type = "topic"),
-            key = "api.user.created"))
-    public void registerUserFromEvent (@Payload AuthUserRegisterEventDTO eventDTO,
+            (value = @Queue (value = "auth.user.created.queue", durable = "true"),
+             exchange = @Exchange (value = "api.user.exchange", type = "topic"),
+             key = "api.user.created"))
+    public void registerUserFromEvent (@Payload AuthUserEventDTO eventDTO,
                                        @Header(AmqpHeaders.MESSAGE_ID) String outboxCodeStr) {
-        UUID outboxCode = UUID.fromString(outboxCodeStr);
+        String routingKey = "auth.user.created";
 
+        processEvent(eventDTO, outboxCodeStr, routingKey, () -> userService.register(eventDTO));
+    }
+
+    @RabbitListener (bindings = @QueueBinding
+            (value = @Queue (value = "auth.user.updated.queue", durable = "true"),
+             exchange = @Exchange (value = "api.user.exchange", type = "topic"),
+             key = "api.user.updated"))
+    public void updateUserFromEvent (@Payload AuthUserEventDTO eventDTO,
+                                     @Header(AmqpHeaders.MESSAGE_ID) String outboxCodeStr) {
+        String routingKey = "auth.user.updated";
+
+        processEvent(eventDTO, outboxCodeStr, routingKey, () -> userService.update(eventDTO));
+    }
+
+    @RabbitListener (bindings = @QueueBinding
+            (value = @Queue (value = "auth.user.deleted.queue", durable = "true"),
+             exchange = @Exchange (value = "api.user.exchange", type = "topic"),
+             key = "api.user.deleted"))
+    public void deleteUserFromEvent (@Payload AuthUserEventDTO eventDTO,
+                                     @Header(AmqpHeaders.MESSAGE_ID) String outboxCodeStr) {
+        String routingKey = "auth.user.deleted";
+
+        processEvent(eventDTO, outboxCodeStr, routingKey, () -> userService.delete(eventDTO.clientCode()));
+    }
+
+    private boolean isEventProcessed (UUID outboxCode) {
         Optional<ProcessedEvent> optProcessedEvent = processedEventRepository.findByCode(outboxCode);
 
         if (optProcessedEvent.isPresent()) {
             log.warn("Event already processed! Processed event ID: '{}'", optProcessedEvent.get().getId());
-            return;
+            return true;
         }
 
-        try {
-            userService.register(eventDTO);
-            sentAuthUserCreationStatus("SUCCESS", null, eventDTO.clientCode());
-
-            ProcessedEvent processedEvent = new ProcessedEvent("AUTH_USER_CREATED", outboxCode);
-            processedEventRepository.save(processedEvent);
-
-        } catch (Exception ex) {
-            log.warn("An unexpected error occurred while registering the user in the Authentication Server! Client code: '{}'. Sending rollback ...", eventDTO.clientCode());
-            sentAuthUserCreationStatus("FAILED", ex.getMessage(), eventDTO.clientCode());
-        }
+        return false;
     }
 
-    public void sentAuthUserCreationStatus (String status, String errorCause, UUID clientCode) {
+    private String handleExceptionMessage (Exception ex) {
+        String errorMessage = ex.getMessage();
+
+        if (errorMessage == null && ex.getCause() != null) {
+            errorMessage = ex.getCause().getMessage();
+        }
+
+        if (errorMessage == null) {
+            errorMessage = ex.getClass().getSimpleName();
+        }
+
+        return errorMessage;
+    }
+
+    private void sendAuthUserEvent(String status, String errorCause, UUID clientCode, String routingKey) {
         AuthUserStatusEventDTO event = new AuthUserStatusEventDTO(status, errorCause, clientCode);
 
-        rabbitTemplate.convertAndSend("auth.user.status.exchange", "auth.user.status", event);
+        rabbitTemplate.convertAndSend("auth.user.exchange", routingKey, event);
+    }
+
+    private void processEvent (AuthUserEventDTO eventDTO, String outboxCodeStr, String routingKey, Runnable eventAction) {
+        UUID outboxCode = UUID.fromString(outboxCodeStr);
+
+        if (isEventProcessed(outboxCode)) return;
+
+        try {
+            eventAction.run();
+            sendAuthUserEvent("SUCCESS", null, eventDTO.clientCode(), routingKey);
+        } catch (Exception ex) {
+            log.warn("An unexpected error occurred while trying process the user in the Authentication Server! Client code: '{}'", eventDTO.clientCode());
+
+            String errorMessage = handleExceptionMessage(ex);
+
+            sendAuthUserEvent("FAILED", errorMessage, eventDTO.clientCode(), routingKey);
+        }
     }
 }

@@ -6,6 +6,8 @@ import api.dto.TransferCreateDTO;
 import api.dto.TransferResponseDTO;
 import api.entity.ClientAccount;
 import api.entity.Transfer;
+import api.enums.Status;
+import api.exception.InvalidProcessException;
 import api.exception.InvalidTransferException;
 import api.mapper.TransferMapper;
 import api.repository.TransferRepository;
@@ -33,6 +35,10 @@ public class TransferService {
         ClientAccount sourceTemp = clientAccountService.findByClientCode(clientCode);
 
         ClientAccount targetTemp = clientAccountService.findByCpf(requestDTO.targetCPF());
+
+        if (sourceTemp.getClient().getStatus() == Status.DELETED || targetTemp.getClient().getStatus() == Status.DELETED) {
+            throw new InvalidProcessException("This account is deleted! Can not transfer");
+        }
 
         if (sourceTemp.getId().equals(targetTemp.getId())) {
             throw new InvalidTransferException(ErrorsMessage.TRANSFER_TO_YOURSELF);

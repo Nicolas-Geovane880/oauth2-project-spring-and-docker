@@ -8,6 +8,7 @@ import oauth2.entity.UserStatus;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.UUID;
 
 public class EntityGetter {
 
@@ -26,6 +27,7 @@ public class EntityGetter {
     public User getUser () {
         return User.builder()
                 .cpf("12345678900")
+                .code(UUID.randomUUID())
                 .password("EncodedPassword")
                 .roles(List.of(getUserRole(), getAdminRole()))
                 .userStatus(new UserStatus())
