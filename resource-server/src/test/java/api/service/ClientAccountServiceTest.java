@@ -3,7 +3,7 @@ package api.service;
 import api.EntityGetter;
 import api.dto.ExtractResponseDTO;
 import api.entity.ClientAccount;
-import api.mapper.BankAccountMapper;
+import api.mapper.ClientAccountMapper;
 import api.repository.ClientAccountRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -17,9 +17,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 @ExtendWith (MockitoExtension.class)
@@ -32,7 +30,7 @@ class ClientAccountServiceTest {
     private ClientAccountRepository repository;
 
     @Mock
-    private BankAccountMapper mapper;
+    private ClientAccountMapper mapper;
 
     private final EntityGetter entityGetter = new EntityGetter();
 

@@ -2,6 +2,7 @@ package oauth2.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import oauth2.enums.EventType;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -28,13 +29,14 @@ public class ProcessedEvent {
     private UUID code;
 
     @Column (name = "event_type", nullable = false)
-    private String eventType;
+    @Enumerated (value = EnumType.STRING)
+    private EventType eventType;
 
     @CreationTimestamp
     @Column (name = "processed_at", nullable = false)
     private LocalDateTime processedAt;
 
-    public ProcessedEvent(String eventType, UUID outboxCode) {
+    public ProcessedEvent(EventType eventType, UUID outboxCode) {
         this.eventType = eventType;
         this.code = outboxCode;
     }

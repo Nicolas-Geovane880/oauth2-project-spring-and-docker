@@ -1,5 +1,6 @@
 package api.entity;
 
+import api.enums.EventType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -37,8 +38,13 @@ public class Outbox {
     @Column (name = "is_processed", nullable = false)
     private boolean isProcessed;
 
-    public Outbox(String payload) {
+    @Column (name = "event_type")
+    @Enumerated (value = EnumType.STRING)
+    private EventType eventType;
+
+    public Outbox(String payload, EventType eventType) {
         this.payload = payload;
+        this.eventType = eventType;
         this.code = UUID.randomUUID();
         this.isProcessed = false;
     }

@@ -15,7 +15,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-      show-sql: true
 
   flyway:
     enabled: true
@@ -38,6 +37,11 @@ spring:
   messages:
     basename: messages
     encoding: UTF-8
+
+logging:
+  level:
+    root: WARN
+    org.hibernate: ERROR
 
 server:
   port: 8080

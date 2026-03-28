@@ -31,9 +31,6 @@ class TransferServiceTest {
     private TransferRepository repository;
 
     @Mock
-    private ClientAccountRepository clientAccountRepository;
-
-    @Mock
     private ClientAccountService clientAccountService;
 
     @Mock
@@ -43,10 +40,10 @@ class TransferServiceTest {
 
     @Test
     void makeTransfer() {
-        ClientAccount source = entityGetter.getClientAccount(null);
+        ClientAccount source = entityGetter.getClientAccount(entityGetter.getClient());
         source.setId(1L);
 
-        ClientAccount target = entityGetter.getClientAccount(null);
+        ClientAccount target = entityGetter.getClientAccount(entityGetter.getClient());
         target.setId(2L);
 
         BigDecimal value = BigDecimal.TEN;
@@ -79,12 +76,12 @@ class TransferServiceTest {
 
     @Test
     void shouldRevokeTransferWhenTheLimitHasReached () {
-        ClientAccount source = entityGetter.getClientAccount(null);
+        ClientAccount source = entityGetter.getClientAccount(entityGetter.getClient());
         source.getAccountTransferLock().setTotalValueTransferredToday(new BigDecimal("4000.00"));
         source.addBalance(new BigDecimal("5000.00"));
         source.setId(1L);
 
-        ClientAccount target = entityGetter.getClientAccount(null);
+        ClientAccount target = entityGetter.getClientAccount(entityGetter.getClient());
         target.setId(2L);
 
         when(clientAccountService.findByClientCode(any(UUID.class))).thenReturn(source);

@@ -1,10 +1,7 @@
 package api.handler;
 
 import api.constant.ErrorsMessage;
-import api.exception.ConflictFieldsException;
-import api.exception.DeserializationException;
-import api.exception.InvalidTransferException;
-import api.exception.NoResourceFoundException;
+import api.exception.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -15,7 +12,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
-
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -39,8 +35,6 @@ public class GlobalHandler {
     public ResponseEntity<ExceptionResponse> handleNoResourceFoundException (NoResourceFoundException ex,
                                                                              WebRequest request) {
         String translatedMessage = translateMessage(ex.getMessage()).formatted(ex.getType(), ex.getResource());
-
-        System.out.println(translatedMessage);
 
         ExceptionResponse details = ExceptionResponse.createDetails(translatedMessage, request, HttpStatus.BAD_REQUEST);
 
@@ -81,12 +75,22 @@ public class GlobalHandler {
         return new ResponseEntity<>(details, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler (InvalidProcessException.class)
+    public ResponseEntity<ExceptionResponse> handleInvalidProcessException (InvalidProcessException ex,
+                                                              WebRequest request) {
+        String translatedMessage = translateMessage(ex.getMessage());
+
+        ExceptionResponse details = ExceptionResponse.createDetails(translatedMessage, request, HttpStatus.BAD_REQUEST);
+
+        return new ResponseEntity<>(details, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler (Exception.class)
     public ResponseEntity<ExceptionResponse> handleException (Exception ex,
                                                               WebRequest request) {
         String translatedMessage = translateMessage(ex.getMessage());
 
-        ExceptionResponse details = ExceptionResponse.createDetails(translatedMessage, request, HttpStatus.BAD_REQUEST);
+        ExceptionResponse details = ExceptionResponse.createDetails(translatedMessage, request, HttpStatus.INTERNAL_SERVER_ERROR);
 
         return new ResponseEntity<>(details, HttpStatus.INTERNAL_SERVER_ERROR);
     }

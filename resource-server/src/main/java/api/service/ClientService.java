@@ -1,10 +1,12 @@
 package api.service;
 
 import api.entity.Client;
+import api.enums.Status;
 import api.exception.NoResourceFoundException;
 import api.repository.ClientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -23,6 +25,20 @@ public class ClientService {
                 .orElseThrow(() -> new NoResourceFoundException("Client not found", "code", code.toString()));
     }
 
+    public void softDeleteClient (UUID code) {
+        Client client = findByCode(code);
+
+        client.setName("deleted");
+        client.setLastName("deleted");
+        client.setBirthDate(null);
+        client.setPhone("deleted.phone." + code);
+        client.setEmail("deleted.email." + code);
+        client.setAge(0);
+        client.setStatus(Status.DELETED);
+
+        repository.save(client);
+    }
+
     public boolean existsByEmail (String email) {
         return repository.existsByEmail(email);
     }
@@ -38,5 +54,7 @@ public class ClientService {
     public void deleteByCode (UUID code) {
         repository.deleteByCode(code);
     }
+
+    public void delete (Client client) { repository.delete(client); }
 
 }

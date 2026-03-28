@@ -6,15 +6,15 @@ import api.dto.ExtractResponseDTO;
 import api.entity.AccountTransferLock;
 import api.entity.Client;
 import api.entity.ClientAccount;
+import api.exception.InvalidProcessException;
 import api.exception.NoResourceFoundException;
-import api.mapper.BankAccountMapper;
+import api.mapper.ClientAccountMapper;
 import api.repository.ClientAccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -23,7 +23,7 @@ public class ClientAccountService {
 
     private final ClientAccountRepository repository;
 
-    private final BankAccountMapper mapper;
+    private final ClientAccountMapper mapper;
 
     public ClientAccount save (Client client, String cpf) {
         ClientAccount clientAccount = ClientAccount.builder()
@@ -34,6 +34,21 @@ public class ClientAccountService {
                 .build();
 
         return repository.save(clientAccount);
+    }
+
+    public void update (ClientAccount clientAccount) {
+        repository.save(clientAccount);
+    }
+
+    public void softDeleteClientAccount (UUID code) {
+        ClientAccount clientAccount = findByClientCode(code);
+
+        clientAccount.setCpf("deleted.cpf" + code);
+        clientAccount.setBalance(BigDecimal.ZERO);
+
+        clientAccount.getAccountTransferLock().setTotalValueTransferredToday(BigDecimal.ZERO);
+
+        repository.save(clientAccount);
     }
 
     @Transactional (readOnly = true)
@@ -67,4 +82,6 @@ public class ClientAccountService {
     public void deleteByClientCode (UUID code) {
         repository.deleteByClientCode(code);
     }
+
+    public void delete (ClientAccount clientAccount) { repository.delete(clientAccount); }
 }

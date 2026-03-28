@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 @Builder
 public record TransferResponseDTO
+
         (String code,
 
          String sourceName,

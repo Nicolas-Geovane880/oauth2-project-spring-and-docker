@@ -1,9 +1,10 @@
 package api.controller;
 
 import api.dto.ExtractResponseDTO;
-import api.dto.UserAccountRegisterDTO;
+import api.dto.BankAccountRegisterDTO;
 import api.dto.UserAccountResponseDTO;
-import api.service.BankAccountOrchestrator;
+import api.dto.UserAccountUpdateDTO;
+import api.service.BankAccountService;
 import api.service.ClientAccountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.UUID;
 
 @RestController
@@ -20,13 +20,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BankAccountController {
 
-    private final BankAccountOrchestrator service;
+    private final BankAccountService service;
 
     private final ClientAccountService clientAccountService;
 
     @PostMapping ("/")
-    public ResponseEntity<UserAccountResponseDTO> register (@Valid @RequestBody UserAccountRegisterDTO register) {
-        UserAccountResponseDTO response = service.saveClientAndAccount(register);
+    public ResponseEntity<UserAccountResponseDTO> register (@Valid @RequestBody BankAccountRegisterDTO register) {
+        UserAccountResponseDTO response = service.registerBankAccount(register);
 
         return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
     }
@@ -38,5 +38,32 @@ public class BankAccountController {
         ExtractResponseDTO response = clientAccountService.extract(clientCode);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping (value = "/me")
+    public ResponseEntity<UserAccountResponseDTO> me (@AuthenticationPrincipal Jwt principal) {
+        UUID clientCode = UUID.fromString(principal.getSubject());
+
+        UserAccountResponseDTO response = service.me(clientCode);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PutMapping (value = "/update")
+    public ResponseEntity<Void> update (@AuthenticationPrincipal Jwt principal, @Valid @RequestBody UserAccountUpdateDTO updateDTO) {
+        UUID clientCode = UUID.fromString(principal.getSubject());
+
+        service.update(clientCode, updateDTO);
+
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
+
+    @DeleteMapping (value = "/delete")
+    public ResponseEntity<Void> delete (@AuthenticationPrincipal Jwt principal) {
+        UUID clientCode = UUID.fromString(principal.getSubject());
+
+        service.softDeleteBankAccount(clientCode);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
