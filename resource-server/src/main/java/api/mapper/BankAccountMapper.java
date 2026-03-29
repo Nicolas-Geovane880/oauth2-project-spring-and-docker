@@ -22,8 +22,10 @@ public interface BankAccountMapper {
 
     BankAccountUpdateHolder toBankAccountUpdateHolder (UserAccountUpdateDTO updateDTO);
 
+    @Mapping (target = "id", ignore = true)
     void update (BankAccountUpdateHolder updateHolder, @MappingTarget ClientAccount clientAccount);
 
+    @Mapping (target = "id", ignore = true)
     void updateClient (BankAccountUpdateHolder updateHolder, @MappingTarget Client client);
 
     @AfterMapping

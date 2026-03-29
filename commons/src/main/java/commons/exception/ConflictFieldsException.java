@@ -1,4 +1,4 @@
-package api.exception;
+package commons.exception;
 
 import java.util.Map;
 

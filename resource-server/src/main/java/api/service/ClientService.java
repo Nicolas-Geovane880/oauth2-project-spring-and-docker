@@ -1,13 +1,12 @@
 package api.service;
 
+import api.constant.ErrorsMessage;
 import api.entity.Client;
 import api.enums.Status;
-import api.exception.NoResourceFoundException;
 import api.repository.ClientRepository;
+import commons.exception.NoResourceFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.UUID;
 
 @Service
@@ -22,7 +21,7 @@ public class ClientService {
 
     public Client findByCode (UUID code) {
         return repository.findByCode(code)
-                .orElseThrow(() -> new NoResourceFoundException("Client not found", "code", code.toString()));
+                .orElseThrow(() -> new NoResourceFoundException(ErrorsMessage.CLIENT_NOT_FOUND));
     }
 
     public void softDeleteClient (UUID code) {
@@ -47,14 +46,5 @@ public class ClientService {
         return repository.existsByPhone(phone);
     }
 
-    public boolean existsByCode (UUID code) {
-        return repository.existsByCode(code);
-    }
-
-    public void deleteByCode (UUID code) {
-        repository.deleteByCode(code);
-    }
-
     public void delete (Client client) { repository.delete(client); }
-
 }

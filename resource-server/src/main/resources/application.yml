@@ -35,7 +35,7 @@ spring:
           jwk-set-uri: http://localhost:9000/oauth2/jwks
 
   messages:
-    basename: messages
+    basename: api-messages
     encoding: UTF-8
 
 logging:
@@ -45,3 +45,18 @@ logging:
 
 server:
   port: 8080
+
+api_created_queue: api.user.created.queue
+api_updated_queue: api.user.updated.queue
+api_deleted_queue: api.user.deleted.queue
+
+auth_exchange: auth.user.exchange
+api_exchange: api.user.exchange
+
+api_user_created_key: api.user.created
+api_user_updated_key: api.user.updated
+api_user_deleted_key: api.user.deleted
+
+auth_user_created_key: auth.user.created
+auth_user_updated_key: auth.user.updated
+auth_user_deleted_key: auth.user.deleted

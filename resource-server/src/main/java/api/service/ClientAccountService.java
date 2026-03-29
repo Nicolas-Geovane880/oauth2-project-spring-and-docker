@@ -6,14 +6,14 @@ import api.dto.ExtractResponseDTO;
 import api.entity.AccountTransferLock;
 import api.entity.Client;
 import api.entity.ClientAccount;
+import api.enums.Status;
 import api.exception.InvalidProcessException;
-import api.exception.NoResourceFoundException;
 import api.mapper.ClientAccountMapper;
 import api.repository.ClientAccountRepository;
+import commons.exception.NoResourceFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -25,7 +25,7 @@ public class ClientAccountService {
 
     private final ClientAccountMapper mapper;
 
-    public ClientAccount save (Client client, String cpf) {
+    public void save (Client client, String cpf) {
         ClientAccount clientAccount = ClientAccount.builder()
                 .cpf(cpf)
                 .client(client)
@@ -33,7 +33,7 @@ public class ClientAccountService {
                 .balance(new BigDecimal(ConstantValue.LIMIT_TRANSFER_VALUE))
                 .build();
 
-        return repository.save(clientAccount);
+        repository.save(clientAccount);
     }
 
     public void update (ClientAccount clientAccount) {
@@ -55,6 +55,10 @@ public class ClientAccountService {
     public ExtractResponseDTO extract (UUID clientCode) {
         ClientAccount clientAccount = findByClientCode(clientCode);
 
+        if (clientAccount.getClient().getStatus() == Status.DELETED) {
+            throw new InvalidProcessException(ErrorsMessage.DELETED_ACCOUNT);
+        }
+
         BigDecimal remainingTransferLimitValue = new BigDecimal(ConstantValue.LIMIT_TRANSFER_VALUE).subtract(clientAccount.getAccountTransferLock().getTotalValueTransferredToday());
 
         return mapper.toExtractResponseDTO(clientAccount, remainingTransferLimitValue);
@@ -62,25 +66,21 @@ public class ClientAccountService {
 
     public ClientAccount findByCpf (String cpf) {
         return repository.findByCpf(cpf)
-                .orElseThrow(() -> new NoResourceFoundException(ErrorsMessage.CLIENT_ACCOUNT_NOT_FOUND, "cpf", cpf));
+                .orElseThrow(() -> new NoResourceFoundException(ErrorsMessage.CLIENT_ACCOUNT_NOT_FOUND));
     }
 
     public ClientAccount findByClientCode (UUID clientCode) {
         return repository.findByClientCode(clientCode)
-                .orElseThrow(() -> new NoResourceFoundException(ErrorsMessage.CLIENT_ACCOUNT_NOT_FOUND, "code", clientCode.toString()));
+                .orElseThrow(() -> new NoResourceFoundException(ErrorsMessage.CLIENT_ACCOUNT_NOT_FOUND));
     }
 
     public ClientAccount findLockedById(Long id) {
         return repository.findLockedById(id)
-                .orElseThrow(() -> new NoResourceFoundException(ErrorsMessage.CLIENT_ACCOUNT_NOT_FOUND, "id", id.toString()));
+                .orElseThrow(() -> new NoResourceFoundException(ErrorsMessage.CLIENT_ACCOUNT_NOT_FOUND));
     }
 
     public boolean existsByCpf (String cpf) {
         return repository.existsByCpf(cpf);
-    }
-
-    public void deleteByClientCode (UUID code) {
-        repository.deleteByClientCode(code);
     }
 
     public void delete (ClientAccount clientAccount) { repository.delete(clientAccount); }
