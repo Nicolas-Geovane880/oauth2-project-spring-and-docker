@@ -37,7 +37,7 @@ public class TransferService {
         ClientAccount targetTemp = clientAccountService.findByCpf(requestDTO.targetCPF());
 
         if (sourceTemp.getClient().getStatus() == Status.DELETED || targetTemp.getClient().getStatus() == Status.DELETED) {
-            throw new InvalidProcessException("This account is deleted! Can not transfer");
+            throw new InvalidProcessException(ErrorsMessage.DELETED_ACCOUNT);
         }
 
         if (sourceTemp.getId().equals(targetTemp.getId())) {
@@ -84,10 +84,7 @@ public class TransferService {
         BigDecimal totalValueTransferredToday = sourceAccount.getAccountTransferLock().getTotalValueTransferredToday();
 
         if (totalValueTransferredToday.add(value).compareTo(limit) > 0) {
-            BigDecimal remainingValue = limit.subtract(totalValueTransferredToday);
-            String additionalMessage = remainingValue.compareTo(BigDecimal.ZERO) == 0 ? "" : " You can only transfer R$" + remainingValue.toPlainString() + " today";
-
-            throw new InvalidTransferException(ErrorsMessage.TRANSFER_LIMIT_OVERPASSED, additionalMessage);
+            throw new InvalidTransferException(ErrorsMessage.TRANSFER_LIMIT_OVERPASSED);
         }
 
         sourceAccount.getAccountTransferLock().increaseValueTransferredToday(value);

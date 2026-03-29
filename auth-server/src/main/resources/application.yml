@@ -32,6 +32,10 @@ spring:
     username: ${RABBIT_USER:guest}
     password: ${RABBIT_PASS:guest}
 
+  messages:
+    basename: auth-messages
+    encoding: UTF-8
+
 logging:
   level:
     root: WARN
@@ -44,3 +48,24 @@ logging:
 
 server:
   port: 9000
+
+#  (value = @Queue (value = "auth.user.created.queue", durable = "true"),
+#  exchange = @Exchange (value = "api.user.exchange", type = "topic"),
+#  key = "api.user.created"))
+
+auth_created_queue: auth.user.created.queue
+auth_updated_queue: auth.user.updated.queue
+auth_deleted_queue: auth.user.deleted.queue
+
+auth_exchange: auth.user.exchange
+api_exchange: api.user.exchange
+
+api_user_created_key: api.user.created
+api_user_updated_key: api.user.updated
+api_user_deleted_key: api.user.deleted
+
+auth_user_created_key: auth.user.created
+auth_user_updated_key: auth.user.updated
+auth_user_deleted_key: auth.user.deleted
+
+

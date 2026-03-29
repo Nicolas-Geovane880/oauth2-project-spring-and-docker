@@ -2,6 +2,8 @@ package api.handler;
 
 import api.constant.ErrorsMessage;
 import api.exception.*;
+import commons.exception.ConflictFieldsException;
+import commons.exception.NoResourceFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -24,7 +26,7 @@ public class GlobalHandler {
     @ExceptionHandler (InvalidTransferException.class)
     public ResponseEntity<ExceptionResponse> handleInvalidTransferException (InvalidTransferException ex,
                                                                              WebRequest request) {
-        String translatedMessage = translateMessage(ex.getMessage()) + (ex.getAdditionalMessage() != null ? ex.getAdditionalMessage() : "");
+        String translatedMessage = translateMessage(ex.getMessage());
 
         ExceptionResponse details = ExceptionResponse.createDetails(translatedMessage, request, HttpStatus.BAD_REQUEST);
 
@@ -34,7 +36,7 @@ public class GlobalHandler {
     @ExceptionHandler (NoResourceFoundException.class)
     public ResponseEntity<ExceptionResponse> handleNoResourceFoundException (NoResourceFoundException ex,
                                                                              WebRequest request) {
-        String translatedMessage = translateMessage(ex.getMessage()).formatted(ex.getType(), ex.getResource());
+        String translatedMessage = translateMessage(ex.getMessage());
 
         ExceptionResponse details = ExceptionResponse.createDetails(translatedMessage, request, HttpStatus.BAD_REQUEST);
 

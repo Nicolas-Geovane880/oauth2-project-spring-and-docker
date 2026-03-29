@@ -1,4 +1,4 @@
-package api.dto.event_dto;
+package commons.dto;
 
 import java.util.UUID;
 

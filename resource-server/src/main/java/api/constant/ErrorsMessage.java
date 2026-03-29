@@ -38,5 +38,7 @@ public class ErrorsMessage {
 
     public static final String DESERIALIZATION_ERROR = "error.deserialization";
 
+    public static final String DELETED_ACCOUNT = "error.deleted.account";
 
+    public static final String REMAINING_BALANCE = "error.remaining.balance";
 }

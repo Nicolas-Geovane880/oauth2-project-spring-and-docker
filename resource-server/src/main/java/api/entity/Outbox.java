@@ -1,6 +1,6 @@
 package api.entity;
 
-import api.enums.EventType;
+import commons.enums.EventType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

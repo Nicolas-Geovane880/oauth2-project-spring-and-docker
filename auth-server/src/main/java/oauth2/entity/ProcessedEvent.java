@@ -1,12 +1,11 @@
 package oauth2.entity;
 
+import commons.enums.EventType;
 import jakarta.persistence.*;
 import lombok.*;
-import oauth2.enums.EventType;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 

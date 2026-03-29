@@ -8,15 +8,15 @@ import api.dto.UserAccountUpdateDTO;
 import api.entity.BankAccountUpdateHolder;
 import api.entity.Client;
 import api.entity.ClientAccount;
-import api.enums.EventType;
-import api.exception.ConflictFieldsException;
+import api.enums.Status;
 import api.exception.InvalidProcessException;
 import api.mapper.BankAccountMapper;
+import commons.enums.EventType;
+import commons.exception.ConflictFieldsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,12 +52,22 @@ public class BankAccountService {
     public UserAccountResponseDTO me (UUID clientCode) {
         ClientAccount clientAccount = clientAccountService.findByClientCode(clientCode);
 
+        if (clientAccount.getClient().getStatus() == Status.DELETED) {
+            throw new InvalidProcessException(ErrorsMessage.DELETED_ACCOUNT);
+        }
+
         return mapper.toUserAccountResponseDTO(clientAccount.getClient(), clientAccount.getCpf());
     }
 
     @Transactional
     public void update (UUID clientCode, UserAccountUpdateDTO updateDTO) {
         handleValidations(updateDTO);
+
+        ClientAccount clientAccount = clientAccountService.findByClientCode(clientCode);
+
+        if (clientAccount.getClient().getStatus() == Status.DELETED) {
+            throw new InvalidProcessException(ErrorsMessage.DELETED_ACCOUNT);
+        }
 
         BankAccountUpdateHolder bankAccountUpdateHolder = mapper.toBankAccountUpdateHolder(updateDTO);
         bankAccountUpdateHolder.setClientCode(clientCode);
@@ -71,8 +81,12 @@ public class BankAccountService {
     public void softDeleteBankAccount (UUID clientCode) {
         ClientAccount clientAccount = clientAccountService.findByClientCode(clientCode);
 
+        if (clientAccount.getClient().getStatus() == Status.DELETED) {
+            throw new InvalidProcessException(ErrorsMessage.DELETED_ACCOUNT);
+        }
+
         if (clientAccount.getBalance().compareTo(BigDecimal.ZERO) > 0) {
-            throw new InvalidProcessException("Make sure to take out your balance before delete the account");
+            throw new InvalidProcessException(ErrorsMessage.REMAINING_BALANCE);
         }
 
         eventService.saveOutbox(null, clientCode, EventType.USER_ACCOUNT_DELETED);
@@ -95,6 +109,4 @@ public class BankAccountService {
             throw new ConflictFieldsException(ErrorsMessage.CONFLICTED_FIELD, conflicts);
         }
     }
-
-
 }

@@ -1,28 +1,12 @@
 package oauth2;
 
-import oauth2.dto.UserRegisterDTO;
 import oauth2.entity.Role;
 import oauth2.entity.User;
 import oauth2.entity.UserStatus;
-
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
 public class EntityGetter {
-
-    public UserRegisterDTO getUserRegisterDTO () {
-        return UserRegisterDTO.builder()
-                .name("name")
-                .lastName("last name")
-                .cpf("12345678900")
-                .password("password")
-                .email("user@mail.com")
-                .phone("(xx) 1234-5678")
-                .birthDate(LocalDate.now().minus(20, ChronoUnit.YEARS))
-                .build();
-    }
 
     public User getUser () {
         return User.builder()

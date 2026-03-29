@@ -1,19 +1,18 @@
 package oauth2.service;
 
+import commons.dto.AuthUserEventDTO;
+import commons.exception.ConflictFieldsException;
+import commons.exception.NoResourceFoundException;
 import lombok.RequiredArgsConstructor;
-import oauth2.dto.events_dto.AuthUserEventDTO;
-import oauth2.exception.ConflictFieldException;
-import oauth2.dto.UserResponseDTO;
+import oauth2.constant.ErrorsMessage;
 import oauth2.entity.Role;
 import oauth2.entity.User;
 import oauth2.entity.UserStatus;
-import oauth2.mapper.UserMapper;
 import oauth2.repository.RoleRepository;
 import oauth2.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.UUID;
 
 @Service
@@ -26,30 +25,27 @@ public class UserService {
 
     private final PasswordEncoder passwordEncoder;
 
-    private final UserMapper mapper;
 
     @Transactional
-    public UserResponseDTO register (AuthUserEventDTO eventDTO) {
+    public void register (AuthUserEventDTO eventDTO) {
         String cpf = eventDTO.cpf();
         String rawPassword = eventDTO.password();
 
-        if (repository.existsByCpf(cpf)) throw new ConflictFieldException();
+        if (repository.existsByCpf(cpf)) throw new ConflictFieldsException(ErrorsMessage.CONFLICTED_FIELD, null);
 
         Role role = roleRepository.findByRole("ROLE_USER")
-                .orElseThrow(() -> new IllegalArgumentException("Role not found"));
+                .orElseThrow(() -> new NoResourceFoundException(ErrorsMessage.ROLE_NOT_FOUND));
 
         User user = new User(eventDTO.clientCode(), cpf, passwordEncoder.encode(rawPassword), new UserStatus());
         user.getRoles().add(role);
 
-        User saved = repository.save(user);
-
-        return mapper.parseToResponse(saved);
+        repository.save(user);
     }
 
     @Transactional
     public void update (AuthUserEventDTO eventDTO) {
         User user = repository.findByCode(eventDTO.clientCode())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new NoResourceFoundException(ErrorsMessage.USER_NOT_FOUND));
 
         if (eventDTO.cpf() != null) user.setCpf(eventDTO.cpf());
 
@@ -63,7 +59,7 @@ public class UserService {
     @Transactional
     public void delete (UUID clientCode) {
         User user = repository.findByCode(clientCode)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new NoResourceFoundException(ErrorsMessage.USER_NOT_FOUND));
 
         repository.delete(user);
     }

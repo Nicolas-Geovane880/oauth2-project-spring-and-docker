@@ -3,18 +3,18 @@ package api.service;
 import api.constant.ErrorsMessage;
 import api.dto.BankAccountProcessDTO;
 import api.dto.UserAccountUpdateDTO;
-import api.dto.event_dto.AuthUserEventDTO;
-import api.dto.event_dto.AuthUserStatusEventDTO;
 import api.entity.BankAccountUpdateHolder;
 import api.entity.ClientAccount;
 import api.entity.Outbox;
-import api.enums.EventType;
 import api.enums.Status;
 import api.exception.DeserializationException;
 import api.mapper.BankAccountMapper;
 import api.repository.BankAccountUpdateHolderRepository;
 import api.repository.OutboxRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import commons.dto.AuthUserEventDTO;
+import commons.dto.AuthUserStatusEventDTO;
+import commons.enums.EventType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
@@ -25,11 +25,11 @@ import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
@@ -46,13 +46,25 @@ public class BankAccountEventService {
 
     private final BankAccountUpdateHolderRepository bankAccountUpdateHolderRepository;
 
+    private final OutboxRepository outboxRepository;
+
     private final BankAccountMapper mapper;
 
     private final ObjectMapper objectMapper;
 
     private final RabbitTemplate rabbitTemplate;
 
-    private final OutboxRepository outboxRepository;
+    @Value (value = "${api_user_created_key}")
+    private String apiUserCreatedKey;
+
+    @Value (value = "${api_user_updated_key}")
+    private String apiUserUpdatedKey;
+
+    @Value (value = "${api_user_deleted_key}")
+    private String apiUserDeletedKey;
+
+    @Value (value = "${api_exchange}")
+    private String apiExchange;
 
     public void saveOutbox (BankAccountProcessDTO process, UUID clientCode, EventType eventType) {
         String cpf = process != null ? process.cpf() : null;
@@ -89,11 +101,11 @@ public class BankAccountEventService {
                         .build();
 
                 switch (outbox.getEventType()) {
-                    case EventType.USER_ACCOUNT_REGISTERED -> rabbitTemplate.convertAndSend("api.user.exchange", "api.user.created", message);
+                    case EventType.USER_ACCOUNT_REGISTERED -> rabbitTemplate.convertAndSend(apiExchange, apiUserCreatedKey, message);
 
-                    case EventType.USER_ACCOUNT_UPDATED -> rabbitTemplate.convertAndSend("api.user.exchange", "api.user.updated", message);
+                    case EventType.USER_ACCOUNT_UPDATED -> rabbitTemplate.convertAndSend(apiExchange, apiUserUpdatedKey, message);
 
-                    case EventType.USER_ACCOUNT_DELETED -> rabbitTemplate.convertAndSend("api.user.exchange", "api.user.deleted", message);
+                    case EventType.USER_ACCOUNT_DELETED -> rabbitTemplate.convertAndSend(apiExchange, apiUserDeletedKey, message);
                 }
 
                 outbox.setProcessed(true);
@@ -106,9 +118,9 @@ public class BankAccountEventService {
 
     @Transactional
     @RabbitListener (bindings = @QueueBinding
-            (value = @Queue (value = "api.user.created.queue", durable = "true"),
-             exchange = @Exchange (value = "auth.user.exchange", type = "topic"),
-             key = "auth.user.created"))
+            (value = @Queue (value = "${api_created_queue}", durable = "true"),
+             exchange = @Exchange (value = "${auth_exchange}", type = "topic"),
+             key = "${auth_user_created_key}"))
     public void listenAuthUserCreatedEvent (@Payload AuthUserStatusEventDTO eventDTO) {
         ClientAccount clientAccount = clientAccountService.findByClientCode(eventDTO.clientCode());
 
@@ -129,9 +141,9 @@ public class BankAccountEventService {
 
     @Transactional
     @RabbitListener (bindings = @QueueBinding
-            (value = @Queue (value = "api.user.updated.queue", durable = "true"),
-             exchange = @Exchange (value = "auth.user.exchange", type = "topic"),
-             key = "auth.user.updated"))
+            (value = @Queue (value = "${api_updated_queue}", durable = "true"),
+             exchange = @Exchange (value = "${auth_exchange}", type = "topic"),
+             key = "${auth_user_updated_key}"))
     public void listenAuthUserUpdatedEvent (@Payload AuthUserStatusEventDTO eventDTO) {
         BankAccountUpdateHolder bankAccountUpdateHolder = bankAccountUpdateHolderRepository.findByClientCode(eventDTO.clientCode())
                 .orElse(null);
@@ -155,9 +167,9 @@ public class BankAccountEventService {
 
     @Transactional
     @RabbitListener (bindings = @QueueBinding
-            (value = @Queue (value = "api.user.deleted.queue", durable = "true"),
-             exchange = @Exchange (value = "auth.user.exchange", type = "topic"),
-             key = "auth.user.deleted"))
+            (value = @Queue (value = "${api_deleted_queue}", durable = "true"),
+             exchange = @Exchange (value = "${auth_exchange}", type = "topic"),
+             key = "${auth_user_deleted_key}"))
     public void listenAuthUserDeletedEvent (@Payload AuthUserStatusEventDTO eventDTO) {
         ClientAccount clientAccount = clientAccountService.findByClientCode(eventDTO.clientCode());
 
