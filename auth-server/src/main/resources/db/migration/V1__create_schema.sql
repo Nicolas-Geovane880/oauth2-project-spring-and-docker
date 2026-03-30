@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS `user_status` (
     `id` BIGINT AUTO_INCREMENT,
-    `is_active` TINYINT (1) DEFAULT 1,
-    `is_account_non_locked` TINYINT (1) DEFAULT 1,
-    `is_enabled` TINYINT (1) DEFAULT 1,
+    `is_active` TINYINT(1) DEFAULT 1,
+    `is_account_non_locked` TINYINT(1) DEFAULT 1,
+    `is_enabled` TINYINT(1) DEFAULT 1,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `deleted_at` TIMESTAMP NULL DEFAULT NULL,
 
