@@ -3,15 +3,11 @@ spring:
     name: api-server
 
   datasource:
-#    url: ${SPRING_DATASOURCE_URL}
-#    username: ${SPRING_DATASOURCE_USERNAME}
-#    password: ${SPRING_DATASOURCE_PASSWORD}
-#    driver-class-name: ${SPRING_DATASOURCE_DRIVER}
-    url: ${DEV_API_DB_URL}
-    username: ${DB_USERNAME}
-    password: ${API_DB_PASSWORD}
-    driver-class-name: ${DB_DRIVER}
-      
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER}
+
   jpa:
     hibernate:
       ddl-auto: none
@@ -22,17 +18,16 @@ spring:
     locations: classpath:db/migration
 
   rabbitmq:
-    host: ${RABBIT_HOST:localhost}
-    port: ${RABBIT_PORT:5672}
-    username: ${RABBIT_USER:guest}
-    password: ${RABBIT_PASS:guest}
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
 
   security:
     oauth2:
       resourceserver:
         jwt:
-#          jwt-set-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI}
-          jwk-set-uri: http://localhost:9000/oauth2/jwks
+          jwk-set-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI}
 
   messages:
     basename: api-messages

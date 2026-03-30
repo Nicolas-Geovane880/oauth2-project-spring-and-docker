@@ -1,38 +1,20 @@
 server:
   port: 9090
 
-app:
-  services:
-    auth-server: http://localhost:9000
-    api-server: http://localhost:8080
-
 spring:
   cloud:
     gateway:
       routes:
         - id: api-route
-          uri: http://localhost:8080
+          uri: http://api-app:8080
           predicates:
             - Path=/api/**
 
         - id: auth-route
-          uri: http://localhost:9000
+          uri: http://auth-app:9000
           predicates:
             - Path=/auth/**, /oauth2/**, /login/**
-
-
-  messages:
-    basename: messages
-    encoding: UTF-8
-
-
-  rabbitmq:
-    host: ${RABBIT_HOST:localhost}
-    port: ${RABBIT_PORT:5672}
-    username: ${RABBIT_USER:guest}
-    password: ${RABBIT_PASS:guest}
 
 logging:
   level:
     root: WARN
-    org.hibernate: ERROR

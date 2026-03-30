@@ -3,34 +3,31 @@ spring:
     name: oauth2 security principle
 
   datasource:
-#    url: ${SPRING_DATASOURCE_URL}
-#    username: ${SPRING_DATASOURCE_USERNAME}
-#    password: ${SPRING_DATASOURCE_PASSWORD}
-#    driver-class-name: ${SPRING_DATASOURCE_DRIVER}
-    url: ${DEV_AUTH_DB_URL}
-    username: ${DB_USERNAME}
-    password: ${AUTH_DB_PASSWORD}
-    driver-class-name: ${DB_DRIVER}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER}
 
   security:
     oauth2:
       authorizationserver:
-        issuer: http://localhost:9000
+        issuer: http://auth-app:9000
+
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
 
-    flyway:
-      enabled: true
-      baseline-on-migration: true
-      locations: classpath:db/migration
+  flyway:
+    enabled: true
+    baseline-on-migration: true
+    locations: classpath:db/migration
 
   rabbitmq:
-    host: ${RABBIT_HOST:localhost}
-    port: ${RABBIT_PORT:5672}
-    username: ${RABBIT_USER:guest}
-    password: ${RABBIT_PASS:guest}
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
 
   messages:
     basename: auth-messages
@@ -41,17 +38,8 @@ logging:
     root: WARN
     org.hibernate: ERROR
 
-#      SPRING_RABBITMQ_HOST=rabbitmq
-      #      - SPRING_RABBITMQ_PORT=5672
-      #      - SPRING_RABBITMQ_USERNAME=guest
-      #      - SPRING_RABBITMQ_PASSWORD=guest
-
 server:
   port: 9000
-
-#  (value = @Queue (value = "auth.user.created.queue", durable = "true"),
-#  exchange = @Exchange (value = "api.user.exchange", type = "topic"),
-#  key = "api.user.created"))
 
 auth_created_queue: auth.user.created.queue
 auth_updated_queue: auth.user.updated.queue
